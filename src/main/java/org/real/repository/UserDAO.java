@@ -75,7 +75,7 @@ public class UserDAO implements IRepository<User> {
     }
 
     @Override
-    public int save(User user) {
+    public Optional<User> save(User user) {
         // the 'creation_date' attribute is always the exact moment when a new user is added
         String sql = "INSERT INTO users(first_name, last_name, dni, email, creation_date) VALUES (?, ?, ?, ?, NOW());";
 
@@ -91,19 +91,21 @@ public class UserDAO implements IRepository<User> {
 
             // gets the last id inserted in the table 'users'
             ResultSet rs = pstmt.executeQuery("SELECT LAST_INSERT_ID() AS user_id;");
-            if (rs.next())
-                return rs.getInt("user_id");
+            if (rs.next()) {
+                user.setId(rs.getInt("user_id"));
+                return Optional.of(user);
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        // by default, if there's a problem, in addition to the exception execution, the method returns -1
-        return -1;
+        // by default, if there's a problem, in addition to the exception execution, the method returns an empty user
+        return Optional.empty();
     }
 
     @Override
-    public void update(User newUser) {
+    public boolean update(User newUser) {
         String sql = "UPDATE users SET first_name = ?, last_name = ?, dni = ?, email = ? WHERE user_id = ?;";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -117,17 +119,21 @@ public class UserDAO implements IRepository<User> {
 
             // executes the statement after preparing it
             pstmt.executeUpdate();
+
+            return true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void deleteById(int id) {
+    public boolean deleteById(int id) {
         String sql = "DELETE FROM users WHERE user_id = " + id + ";";
 
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(sql);
+
+            return true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -72,7 +72,7 @@ public class CredentialDAO implements IRepository<Credential> {
     }
 
     @Override
-    public int save(Credential credential) {
+    public Optional<Credential> save(Credential credential) {
         String sql = "INSERT INTO credentials(user_id, username, password, permission) VALUES (?, ?, ?, ?);";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -87,18 +87,20 @@ public class CredentialDAO implements IRepository<Credential> {
             // gets the last insert id from the table 'credentials'
             ResultSet rs = pstmt.executeQuery("SELECT LAST_INSERT_ID() AS credential_id;");
 
-            if (rs.next())
-                return rs.getInt("credential_id");
+            if (rs.next()) {
+                credential.setId(rs.getInt("credential_id"));
+                return Optional.of(credential);
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        return -1;
+        return Optional.empty();
     }
 
     @Override
-    public void update(Credential newCredential) {
+    public boolean update(Credential newCredential) {
         // the record at the 'credentials' table is modified by giving his user_id attribute
         String sql = "UPDATE credentials SET username = ?, password = ?, permission = ? WHERE user_id = ?";
 
@@ -106,17 +108,21 @@ public class CredentialDAO implements IRepository<Credential> {
             pstmt.setString(1, newCredential.getUsername());
             pstmt.setString(2, newCredential.getPassword());
             pstmt.setString(3, newCredential.getPermission().toString());
+
+            return true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void deleteById(int id) {
+    public boolean deleteById(int id) {
         String sql = "DELETE FROM credentials WHERE credential_id = " + id + ";";
 
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(sql);
+
+            return true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

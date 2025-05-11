@@ -6,7 +6,7 @@ import java.util.Optional;
 public interface IRepository<T> {
     Optional<T> findById(int id);
     List<T> findAll();
-    int save(T type);
-    void update(T newType);
-    void deleteById(int id);
+    Optional<T> save(T type);
+    boolean update(T newType);
+    boolean deleteById(int id);
 }

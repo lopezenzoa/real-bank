@@ -76,7 +76,7 @@ public class AccountDAO implements IRepository<Account> {
     }
 
     @Override
-    public int save(Account account) {
+    public Optional<Account> save(Account account) {
         // the 'creation_date' attribute is always the exact moment when a new account is added
         // the 'balance' attribute is always 0.0 for a new account
         String sql = "INSERT INTO accounts(user_id, account_type, balance, creation_date) VALUES (?, ?, 0.0, NOW());";
@@ -91,19 +91,21 @@ public class AccountDAO implements IRepository<Account> {
 
             // gets the last id inserted in the table 'accounts'
             ResultSet rs = pstmt.executeQuery("SELECT LAST_INSERT_ID() AS account_id;");
-            if (rs.next())
-                return rs.getInt("account_id");
+            if (rs.next()) {
+                account.setId(rs.getInt("account_id"));
+                return Optional.of(account);
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        // by default, if there's a problem, in addition to the exception execution, the method returns -1
-        return -1;
+        // by default, if there's a problem, in addition to the exception execution, the method returns an empty account
+        return Optional.empty();
     }
 
     @Override
-    public void update(Account newAccount) {
+    public boolean update(Account newAccount) {
         // the only attribute can be modified in an account is its balance
         String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
 
@@ -115,17 +117,21 @@ public class AccountDAO implements IRepository<Account> {
 
             // executes the statement after preparing it
             pstmt.executeUpdate();
+
+            return true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void deleteById(int id) {
+    public boolean deleteById(int id) {
         String sql = "DELETE FROM accounts WHERE account_id = " + id + ";";
 
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(sql);
+
+            return true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
