@@ -35,8 +35,11 @@ public class UserService implements IService<User> {
 
     @Override
     public User save(User user) {
+        System.out.println(validateDNI(user.getDni()));
+        System.out.println(validateEmail(user.getEmail()));
+
         // validating the user is matching with the db schema
-        if (user.getFirstName().isBlank() || user.getLastName().isBlank() || !validateDNI(user.getDni()) || !validateEmail(user.getEmail()))
+        if (user.getFirstName().isBlank() || user.getLastName().isBlank() || validateDNI(user.getDni()) || validateEmail(user.getEmail()))
             throw new ValidationException("Sorry! something while adding the new user failed." +
                     "\nBe sure that:" +
                     "\n\t- Both first name and last name are not in blank" +
@@ -54,7 +57,7 @@ public class UserService implements IService<User> {
             throw new EntityNotFoundException("Sorry! The user with the ID: " + newUser.getId() + " was not found at the database");
 
         // validating the user is matching with the db schema
-        if (newUser.getFirstName().isBlank() || newUser.getLastName().isBlank() || !validateDNI(newUser.getDni()) || !validateEmail(newUser.getEmail()))
+        if (newUser.getFirstName().isBlank() || newUser.getLastName().isBlank() || validateDNI(newUser.getDni()) || validateEmail(newUser.getEmail()))
             throw new ValidationException("Sorry! something while updating the user failed." +
                     "\nBe sure that:" +
                     "\n\t- Both first name and last name are not in blank" +

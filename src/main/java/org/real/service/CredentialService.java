@@ -3,7 +3,6 @@ package org.real.service;
 import org.real.exceptions.EntityNotFoundException;
 import org.real.exceptions.ValidationException;
 import org.real.model.Credential;
-import org.real.model.User;
 import org.real.repository.CredentialDAO;
 
 import java.util.List;
@@ -36,7 +35,7 @@ public class CredentialService implements IService<Credential> {
     @Override
     public Credential save(Credential credential) {
         // validating the user is matching with the db schema
-        if (!validateUserId(credential.getUserId()) || !validateUsername(credential.getUsername()) || credential.getPassword().isBlank() || credential.getUsername().isBlank())
+        if (validateUserId(credential.getUserId()) || validateUsername(credential.getUsername()) || credential.getPassword().isBlank() || credential.getUsername().isBlank())
             throw new ValidationException("Sorry! something while adding the new credential failed." +
                     "\nBe sure that:" +
                     "\n\t- Both username and password are not in blank" +
@@ -53,7 +52,7 @@ public class CredentialService implements IService<Credential> {
         if (credentialOptional.isEmpty())
             throw new EntityNotFoundException("Sorry! The credential with the ID: " + newCredential.getId() + " was not found at the database");
 
-        if (!validateUserId(newCredential.getUserId()) || !validateUsername(newCredential.getUsername()) || newCredential.getPassword().isBlank() || newCredential.getUsername().isBlank())
+        if (validateUserId(newCredential.getUserId()) || validateUsername(newCredential.getUsername()) || newCredential.getPassword().isBlank() || newCredential.getUsername().isBlank())
             throw new ValidationException("Sorry! something while adding the new credential failed." +
                     "\nBe sure that:" +
                     "\n\t- Both username and password are not in blank" +

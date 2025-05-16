@@ -3,10 +3,8 @@ package org.real.service;
 import org.real.exceptions.EntityNotFoundException;
 import org.real.exceptions.ValidationException;
 import org.real.model.Account;
-import org.real.model.Credential;
 import org.real.repository.AccountDAO;
 
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,7 +35,7 @@ public class AccountService implements IService<Account> {
     @Override
     public Account save(Account account) {
         // validating the user is matching with the db schema
-        if (validateUserAccounts(account.getUserId()) || account.getBalance() >= 0.0)
+        if (validateUserAccounts(account.getUserId()))
             throw new ValidationException("Sorry! something while adding the new account failed." +
                     "\nBe sure that:" +
                     "\n\t- The account balance is a positive integer" +
@@ -47,13 +45,33 @@ public class AccountService implements IService<Account> {
     }
 
     @Override
-    public Account update(Account newType) {
-        return null;
+    public Account update(Account newAccount) {
+        // validating the account exists at the db
+        Optional<Account> accountOptional = repository.findById(newAccount.getId());
+
+        if (accountOptional.isEmpty())
+            throw new EntityNotFoundException("Sorry! The account with the ID: " + newAccount.getId() + " was not found at the database");
+
+        if (newAccount.getBalance() < 0.0)
+            throw new ValidationException("Sorry! something while adding the new account failed." +
+                    "\nBe sure that:" +
+                    "\n\t- The account balance is a positive integer");
+
+        // performs the updating at the db
+        repository.update(newAccount);
+
+        return newAccount;
     }
 
     @Override
     public boolean deleteById(int id) {
-        return false;
+        Optional<Account> accountOptional = repository.findById(id);
+
+        // validating the user exists at the db
+        if (accountOptional.isEmpty())
+            throw new EntityNotFoundException("Sorry! The account with the ID: " + id + " was not found at the database");
+
+        return repository.deleteById(id);
     }
 
     private boolean validateUserAccounts(Integer userId) {
@@ -64,6 +82,9 @@ public class AccountService implements IService<Account> {
                         account -> account.getAccountType().toString(), Collectors.counting()
                 ));
 
-        return userAccountsByType.get("CHECKING") == 1;
+        if (userAccountsByType.get("SAVINGS") == null)
+                return false;
+        else
+            return true;
     }
 }
