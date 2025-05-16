@@ -18,7 +18,7 @@ public class CredentialDAO implements IRepository<Credential> {
     }
 
     private void createTable() {
-        String sql = "CREATE TABLE credentials (\n" +
+        String sql = "CREATE TABLE IF NOT EXISTS credentials (\n" +
                 "  credential_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,\n" +
                 "  user_id INT,\n" +
                 "  username VARCHAR(255) UNIQUE NOT NULL,\n" +

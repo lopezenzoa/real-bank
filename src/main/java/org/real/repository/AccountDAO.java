@@ -19,7 +19,7 @@ public class AccountDAO implements IRepository<Account> {
 
     public void createTable() {
         try (Statement stmt = connection.createStatement()) {
-            String sql = "CREATE TABLE accounts (\n" +
+            String sql = "CREATE TABLE IF NOT EXISTS accounts (\n" +
                     "  account_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,\n" +
                     "  user_id INT,\n" +
                     "  account_type VARCHAR(255),\n" +
@@ -30,7 +30,7 @@ public class AccountDAO implements IRepository<Account> {
                     "  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE\n" +
                     ");";
 
-            stmt.executeQuery(sql);
+            stmt.executeUpdate(sql);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

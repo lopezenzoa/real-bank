@@ -29,7 +29,7 @@ public class UserDAO implements IRepository<User> {
                     "  update_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n" +
                     ");";
 
-            stmt.executeQuery(sql);
+            stmt.executeUpdate(sql); // executeQuery cannot issue statements that do not produce result sets
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
